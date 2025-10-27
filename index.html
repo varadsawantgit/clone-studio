@@ -1,255 +1,120 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Red Jade Apps Studio</title>
 
   <style>
-    :root{
-      --red:#e63946;        /* bright red */
-      --jade:#06d6a0;       /* bright jade green */
-      --gold:#ffd700;       /* bright gold */
-      --glass: rgba(255,255,255,0.06);
-      --card-w: 260px;
+    /* ----- Global Styles ----- */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Poppins", sans-serif;
+      background: radial-gradient(circle at top left, #b30000, #660000);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      background-attachment: fixed;
+      overflow-x: hidden;
     }
 
-    html,body{
-      height:100%;
-      margin:0;
-      font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      background: radial-gradient(1200px 600px at 10% 10%, rgba(255,230,179,0.06), transparent),
-                  linear-gradient(135deg, var(--red), var(--jade));
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
+    /* Subtle gold texture overlay */
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(255, 215, 0, 0.05),
+        rgba(255, 215, 0, 0.05) 2px,
+        transparent 2px,
+        transparent 6px
+      );
+      pointer-events: none;
+    }
+
+    h1 {
+      font-family: "Cinzel Decorative", serif;
+      font-weight: 700;
+      font-size: 2.5rem;
+      color: #ffd700;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      margin-bottom: 30px;
+    }
+
+    /* ----- Grid Layout ----- */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 30px;
+      width: 90%;
+      max-width: 700px;
+      z-index: 1;
+    }
+
+    /* ----- Card Styles ----- */
+    .card {
+      background: linear-gradient(145deg, #8b0000, #a30000);
+      border: 2px solid #ffd700;
+      border-radius: 20px;
+      padding: 40px 20px;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #e0e0e0;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.3),
+                  inset 0 0 8px rgba(0, 128, 0, 0.3);
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px rgba(255, 215, 0, 0.6),
+                  inset 0 0 10px rgba(0, 128, 0, 0.5);
       color: #fff;
     }
 
-    /* page container */
-    .wrap{
-      min-height:100%;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:28px;
-      padding:48px 24px;
-      box-sizing:border-box;
+    /* ----- Footer (optional) ----- */
+    footer {
+      position: absolute;
+      bottom: 15px;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.7);
+      letter-spacing: 1px;
     }
 
-    /* title */
-    .title{
-      font-size:clamp(1.6rem, 2.8vw, 2.8rem);
-      letter-spacing:1px;
-      color: #fff8e1;
-      text-shadow: 0 6px 24px rgba(0,0,0,0.35), 0 0 12px rgba(255,215,0,0.15);
-      margin:0;
-      font-weight:700;
-    }
-
-    /* subtle subtitle line (optional) */
-    .subtitle{
-      margin:0;
-      font-size:0.95rem;
-      color:rgba(255,235,59,0.95);
-      opacity:.95;
-      text-shadow: 0 0 6px rgba(255,255,255,0.05);
-    }
-
-    /* grid */
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(var(--card-w), 1fr));
-      gap:20px;
-      width: min(1100px, 100%);
-      align-items:stretch;
-    }
-
-    /* card base */
-    .card{
-      --accent: linear-gradient(120deg, rgba(255,215,0,0.18), rgba(255,215,0,0.06));
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      gap:12px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-      border-radius:16px;
-      padding:20px;
-      box-sizing:border-box;
-      height:180px;
-      min-height:140px;
-      text-decoration:none;
-      color:inherit;
-      border: 2px solid rgba(255,215,0,0.25);
-      box-shadow:
-        0 8px 30px rgba(0,0,0,0.45),
-        0 0 30px rgba(255, 215, 0, 0.06) inset;
-      transition: transform .28s cubic-bezier(.2,.9,.3,1), box-shadow .28s, background .28s;
-      position:relative;
-      overflow:hidden;
-      backdrop-filter: blur(6px) saturate(110%);
-    }
-
-    /* name & description */
-    .card h3{
-      margin:0;
-      font-size:1.15rem;
-      color: #fffef8;
-      letter-spacing:0.4px;
-    }
-
-    .card p{
-      margin:0;
-      color: rgba(255,255,255,0.88);
-      font-size:0.95rem;
-      line-height:1.2;
-      opacity:0.95;
-    }
-
-    /* right-bottom small label */
-    .meta{
-      font-weight:600;
-      font-size:0.86rem;
-      color: rgba(34,34,34,0.95);
-      background: linear-gradient(90deg,var(--gold), #ffb300);
-      padding:6px 10px;
-      border-radius:10px;
-      align-self:flex-start;
-      box-shadow: 0 6px 16px rgba(255,180,0,0.16);
-      transform: translateY(6px);
-    }
-
-    /* hover glow & shimmer */
-    .card::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      background: linear-gradient(120deg, rgba(255,255,255,0.02), transparent 30%, rgba(255,255,255,0.02));
-      mix-blend-mode: overlay;
-    }
-
-    .card:hover{
-      transform: translateY(-8px) scale(1.02);
-      box-shadow:
-        0 18px 50px rgba(0,0,0,0.55),
-        0 0 45px rgba(255, 215, 0, 0.18);
-    }
-
-    /* subtle gold line at top */
-    .card .topline{
-      height:6px;
-      width:100%;
-      border-radius:8px;
-      background: linear-gradient(90deg, rgba(255,215,0,0.95), rgba(255,183,0,0.8));
-      box-shadow: 0 6px 18px rgba(255,200,0,0.08);
-      margin:-16px -16px 8px -16px;
-    }
-
-    /* accent circle (jade) */
-    .accent{
-      width:48px;
-      height:48px;
-      border-radius:10px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-      border: 2px solid rgba(255,255,255,0.06);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color: #fff;
-      font-weight:700;
-      box-shadow: 0 8px 30px rgba(6,214,160,0.12);
-    }
-
-    /* specific visual for matching puzzle card (jade banner) */
-    .card.matching{
-      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-      border: 2px solid rgba(6,214,160,0.18);
-    }
-    .card.matching .accent{
-      background: linear-gradient(180deg, var(--jade), #00cfa0);
-      color: #091012;
-      box-shadow: 0 10px 30px rgba(6,214,160,0.25);
-    }
-
-    /* coming soon style */
-    .card.coming p{ opacity: 0.9; color: rgba(255,255,255,0.7); }
-    .card.coming .meta{ background: rgba(255,255,255,0.06); color: #ffeb3b; box-shadow:none; border: 1px solid rgba(255,235,59,0.06); }
-
-    /* responsive adjustments */
-    @media (max-width:520px){
-      .grid{ gap:14px; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); }
-      .card{ height:auto; padding:16px; }
-      .accent{ width:40px; height:40px; }
-    }
-
-    /* footer small */
-    .footer{
-      font-size:0.85rem;
-      color: rgba(255,235,59,0.9);
-      margin-top:6px;
-      opacity:0.95;
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 2rem;
+      }
+      .card {
+        font-size: 1.3rem;
+        padding: 30px 15px;
+      }
     }
   </style>
 </head>
+
 <body>
-  <div class="wrap">
-    <h1 class="title">Red Jade Apps Studio</h1>
-    <div class="grid">
+  <h1>Red Jade Apps Studio</h1>
 
-      <!-- Matching Puzzle (your game) -->
-      <a class="card matching" href="number-puzzle/" target="_blank" rel="noopener">
-        <div class="topline"></div>
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-          <div>
-            <h3>Golden Sum — Matching Puzzle</h3>
-            <p>Click two numbers that add up to the golden target. Quick, elegant, addictive.</p>
-          </div>
-          <div class="accent" aria-hidden="true">ψ</div>
-        </div>
-        <div class="meta">Play</div>
-      </a>
-
-      <!-- Placeholder cards -->
-      <a class="card coming" href="#" target="_blank" rel="noopener">
-        <div class="topline" style="background: linear-gradient(90deg, rgba(255,215,0,0.8), rgba(255,215,0,0.55));"></div>
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-          <div>
-            <h3>Coming Soon</h3>
-            <p>A secret app — elegant utility arriving soon. Replace this link with your app URL when ready.</p>
-          </div>
-          <div class="accent" style="background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); color: var(--gold); box-shadow:none;">…</div>
-        </div>
-        <div class="meta">Soon</div>
-      </a>
-
-      <a class="card coming" href="#" target="_blank" rel="noopener">
-        <div class="topline" style="background: linear-gradient(90deg, rgba(255,215,0,0.8), rgba(255,183,0,0.6));"></div>
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-          <div>
-            <h3>Coming Soon</h3>
-            <p>Another planned utility. Add your description and link later to publish.</p>
-          </div>
-          <div class="accent" style="background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); color: var(--gold); box-shadow:none;">…</div>
-        </div>
-        <div class="meta">Soon</div>
-      </a>
-
-      <a class="card coming" href="#" target="_blank" rel="noopener">
-        <div class="topline" style="background: linear-gradient(90deg, rgba(255,215,0,0.9), rgba(255,183,0,0.6));"></div>
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-          <div>
-            <h3>Coming Soon</h3>
-            <p>Placeholder for future app — swap link and text when ready to publish.</p>
-          </div>
-          <div class="accent" style="background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); color: var(--gold); box-shadow:none;">…</div>
-        </div>
-        <div class="meta">Soon</div>
-      </a>
-
-    </div>
-
-    <div class="footer">Hosted on GitHub Pages • replace placeholder links with your app folders (e.g. <code>game1/</code>)</div>
+  <div class="card-grid">
+    <div class="card" onclick="openPage('number-puzzle.html')">Number Puzzle</div>
+    <div class="card" onclick="openPage('calculator.html')">Calculator</div>
   </div>
+
+  <footer>© 2025 Red Jade Apps Studio</footer>
+
+  <script>
+    // ----- JavaScript Navigation -----
+    function openPage(page) {
+      window.location.href = page;
+    }
+  </script>
 </body>
 </html>
-
