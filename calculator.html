@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Calculator</title>
+  <title>Calculator | Red Jade Apps Studio</title>
 
   <style>
+    /* ----- Global Styles ----- */
     body {
       margin: 0;
       padding: 0;
       font-family: "Poppins", sans-serif;
-      background: radial-gradient(circle at top right, #8b0000, #330000);
+      background: radial-gradient(circle at top left, #b30000, #660000);
       color: #fff;
       display: flex;
       flex-direction: column;
@@ -22,21 +23,86 @@
     h1 {
       font-family: "Cinzel Decorative", serif;
       color: #ffd700;
-      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
       margin-bottom: 20px;
     }
 
-    p {
-      color: #e0e0e0;
-      font-size: 1.2rem;
+    /* ----- Calculator Container ----- */
+    .calculator {
+      background: linear-gradient(145deg, #8b0000, #a30000);
+      border: 2px solid #ffd700;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.3), inset 0 0 10px rgba(0, 128, 0, 0.2);
+      padding: 20px;
+      width: 300px;
+      text-align: center;
+    }
+
+    /* ----- Display ----- */
+    .display {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid #ffd700;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+      font-size: 1.6rem;
+      color: #fff;
+      text-align: right;
+      box-shadow: inset 0 0 8px rgba(255, 215, 0, 0.3);
+    }
+
+    /* ----- Buttons Grid ----- */
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
     }
 
     button {
+      background: linear-gradient(145deg, #a00000, #8b0000);
+      border: 2px solid #ffd700;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 1.2rem;
+      font-weight: 600;
+      padding: 15px;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.3),
+                  inset 0 0 5px rgba(0, 128, 0, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      background: linear-gradient(145deg, #cc0000, #a30000);
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.6),
+                  inset 0 0 8px rgba(0, 128, 0, 0.5);
+    }
+
+    /* Operator Buttons */
+    .operator {
+      color: #00cc66;
+      font-weight: bold;
+    }
+
+    /* Clear and Equal Buttons */
+    .clear {
+      background: linear-gradient(145deg, #660000, #a00000);
+      border: 2px solid #ff3333;
+    }
+
+    .equal {
+      background: linear-gradient(145deg, #006400, #009933);
+      border: 2px solid #ffd700;
+    }
+
+    /* Back Button */
+    .back-btn {
       margin-top: 30px;
       padding: 12px 24px;
       border: none;
       border-radius: 10px;
-      background: linear-gradient(90deg, #ffcc00, #006400);
+      background: linear-gradient(90deg, #ffcc00, #cc0000);
       color: white;
       font-weight: bold;
       cursor: pointer;
@@ -44,7 +110,7 @@
       transition: transform 0.2s ease;
     }
 
-    button:hover {
+    .back-btn:hover {
       transform: scale(1.05);
     }
   </style>
@@ -52,7 +118,75 @@
 
 <body>
   <h1>Calculator</h1>
-  <p>Simple calculator page (coming soon)</p>
-  <button onclick="window.location.href='index.html'">← Back to Home</button>
+
+  <div class="calculator">
+    <div class="display" id="display">0</div>
+
+    <div class="buttons">
+      <button class="clear" onclick="clearDisplay()">C</button>
+      <button class="operator" onclick="appendOperator('/')">÷</button>
+      <button class="operator" onclick="appendOperator('*')">×</button>
+      <button class="operator" onclick="appendOperator('-')">−</button>
+
+      <button onclick="appendNumber('7')">7</button>
+      <button onclick="appendNumber('8')">8</button>
+      <button onclick="appendNumber('9')">9</button>
+      <button class="operator" onclick="appendOperator('+')">+</button>
+
+      <button onclick="appendNumber('4')">4</button>
+      <button onclick="appendNumber('5')">5</button>
+      <button onclick="appendNumber('6')">6</button>
+      <button class="equal" rowspan="2" onclick="calculate()">=</button>
+
+      <button onclick="appendNumber('1')">1</button>
+      <button onclick="appendNumber('2')">2</button>
+      <button onclick="appendNumber('3')">3</button>
+
+      <button onclick="appendNumber('0')">0</button>
+      <button onclick="appendNumber('.')">.</button>
+    </div>
+  </div>
+
+  <button class="back-btn" onclick="window.location.href='index.html'">← Back to Home</button>
+
+  <script>
+    const display = document.getElementById("display");
+    let currentInput = "";
+
+    function appendNumber(num) {
+      if (currentInput === "0" && num !== ".") {
+        currentInput = num;
+      } else {
+        currentInput += num;
+      }
+      display.textContent = currentInput;
+    }
+
+    function appendOperator(op) {
+      if (currentInput === "") return;
+      const lastChar = currentInput.slice(-1);
+      if (["+", "-", "*", "/"].includes(lastChar)) {
+        currentInput = currentInput.slice(0, -1) + op;
+      } else {
+        currentInput += op;
+      }
+      display.textContent = currentInput;
+    }
+
+    function clearDisplay() {
+      currentInput = "";
+      display.textContent = "0";
+    }
+
+    function calculate() {
+      try {
+        currentInput = eval(currentInput).toString();
+        display.textContent = currentInput;
+      } catch {
+        display.textContent = "Error";
+        currentInput = "";
+      }
+    }
+  </script>
 </body>
 </html>
