@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>iPhone Clock — Single File Clone</title>
+<style>
+  :root{
+    --bg:#0b0b0f;--card:#0f1720;--muted:#9aa4b2;--accent:#0ea5a4;--glass: rgba(255,255,255,0.03);
+    --glass-2: rgba(255,255,255,0.02);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#020204 0%, #071126 100%);color:#e6eef6}
+  .app{max-width:980px;margin:28px auto;padding:18px;border-radius:20px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 6px 30px rgba(2,6,23,0.6)}
+  header{display:flex;align-items:center;justify-content:space-between;padding:6px 6px 18px}
+  .title{display:flex;flex-direction:column}
+  .title h1{margin:0;font-size:18px;letter-spacing:0.2px}
+  .subtitle{font-size:12px;color:var(--muted);margin-top:4px}
+
+  .tabs{display:flex;gap:8px;border-radius:12px;background:var(--glass);padding:6px}
+  .tab{padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:600;color:var(--muted);user-select:none}
+  .tab.active{background:linear-gradient(90deg, rgba(14,165,164,0.12), rgba(236,72,153,0.04));color:white}
+
+  main{display:grid;grid-template-columns:1fr;gap:18px;padding:8px}
+
+  /* world clock */
+  .controls{display:flex;justify-content:space-between;align-items:center;padding:8px}
+  .search{display:flex;gap:8px}
+  .btn{background:var(--glass-2);border-radius:10px;padding:8px 10px;cursor:pointer;border:1px solid rgba(255,255,255,0.03)}
+  .btn.primary{background:linear-gradient(90deg,#06b6d4,#7c3aed);color:white}
+  .clock-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:14px;box-shadow:inset 0 1px rgba(255,255,255,0.02)}
+  .tz{font-size:12px;color:var(--muted)}
+  .time{font-size:22px;font-weight:700;margin-top:6px}
+  .city{font-size:14px;margin-top:6px}
+
+  /* stopwatch and timer */
+  .panel{display:flex;gap:18px;align-items:flex-start}
+  .left{flex:1}
+  .right{width:320px}
+  .large-time{font-size:44px;font-weight:700}
+  .small{color:var(--muted)}
+  .controls-row{display:flex;gap:8px;margin-top:12px}
+  .laps{max-height:240px;overflow:auto;margin-top:10px;border-top:1px dashed rgba(255,255,255,0.02);padding-top:8px}
+  .lap{display:flex;justify-content:space-between;padding:6px 4px;border-radius:6px}
+
+  /* timer dial */
+  .dial{width:220px;height:220px;border-radius:50%;background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.02));display:flex;align-items:center;justify-content:center;position:relative}
+  .dial svg{position:absolute;inset:0}
+  .dial .center{display:flex;flex-direction:column;align-items:center;justify-content:center}
+
+  /* modal */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.6);display:flex;align-items:center;justify-content:center}
+  .modal{background:#071126;padding:18px;border-radius:12px;width:420px}
+  .modal h3{margin:0 0 8px}
+  .field{margin-top:8px}
+  input,select{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+  footer.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+
+  @media (max-width:700px){.app{margin:8px;border-radius:12px;padding:12px}.right{width:100%}}
+</style>
+</head>
+<body>
+  <div class="app" role="application">
+    <header>
+      <div class="title">
+        <h1>clock</h1>
+        <div class="subtitle">single-file iphone clock clone</div>
+      </div>
+      <nav class="tabs" role="tablist">
+        <div class="tab active" data-tab="world">world clock</div>
+        <div class="tab" data-tab="stopwatch">stopwatch</div>
+        <div class="tab" data-tab="timer">timer</div>
+      </nav>
+    </header>
+
+    <main>
+      <!-- World clock view -->
+      <section id="world" class="view">
+        <div class="controls">
+          <div class="search">
+            <input id="searchCity" placeholder="search city or timezone" style="padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit" />
+            <button class="btn" id="openAdd">add</button>
+          </div>
+          <div class="small">local time: <span id="localTime"></span></div>
+        </div>
+        <div class="clock-grid" id="clockGrid" aria-live="polite"></div>
+      </section>
+
+      <!-- Stopwatch view -->
+      <section id="stopwatch" class="view" style="display:none">
+        <div class="panel">
+          <div class="left card">
+            <div class="large-time" id="swTime">00:00.00</div>
+            <div class="small">stopwatch</div>
+            <div class="controls-row">
+              <button class="btn" id="swStart">start</button>
+              <button class="btn" id="swLap" disabled>lap</button>
+              <button class="btn" id="swReset" disabled>reset</button>
+            </div>
+            <div class="laps" id="laps"></div>
+          </div>
+          <div class="right card">
+            <div class="small">tips</div>
+            <div style="margin-top:8px;color:var(--muted);font-size:13px">This stopwatch supports start, lap, pause and reset. Laps are recorded below.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Timer view -->
+      <section id="timer" class="view" style="display:none">
+        <div class="panel">
+          <div class="left card">
+            <div class="small">set timer</div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <input type="number" id="tHours" min="0" max="23" placeholder="hh" style="width:80px" />
+              <input type="number" id="tMins" min="0" max="59" placeholder="mm" style="width:80px" />
+              <input type="number" id="tSecs" min="0" max="59" placeholder="ss" style="width:80px" />
+            </div>
+            <div class="controls-row">
+              <button class="btn primary" id="tStart">start</button>
+              <button class="btn" id="tPause" disabled>pause</button>
+              <button class="btn" id="tReset" disabled>reset</button>
+            </div>
+          </div>
+
+          <div class="right card" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <div class="dial" id="dial">
+              <svg viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="8"></circle>
+                <path id="progressPath" stroke-linecap="round" fill="none" stroke-width="8" stroke="url(#g)" d=""></path>
+                <defs>
+                  <linearGradient id="g"><stop offset="0%" stop-opacity="1" /><stop offset="100%" stop-opacity="0.6" /></linearGradient>
+                </defs>
+              </svg>
+              <div class="center">
+                <div class="large-time" id="tDisplay">00:00:00</div>
+                <div class="small">timer</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Add city modal -->
+  <div id="modalRoot"></div>
+
+<script>
+(function(){
+  // --- TIMEZONES: a curated short list for quick selection ---
+  const TIMEZONES = [
+    {tz:'UTC', city:'UTC'},
+    {tz:'Europe/London', city:'london'},
+    {tz:'Europe/Paris', city:'paris'},
+    {tz:'Europe/Berlin', city:'berlin'},
+    {tz:'America/New_York', city:'new york'},
+    {tz:'America/Chicago', city:'chicago'},
+    {tz:'America/Los_Angeles', city:'los angeles'},
+    {tz:'Asia/Kolkata', city:'mumbai (kolkata tz)'},
+    {tz:'Asia/Tokyo', city:'tokyo'},
+    {tz:'Asia/Shanghai', city:'shanghai'},
+    {tz:'Australia/Sydney', city:'sydney'},
+    {tz:'Pacific/Auckland', city:'auckland'},
+    {tz:'Asia/Dubai', city:'dubai'},
+    {tz:'Africa/Johannesburg', city:'johannesburg'}
+  ];
+
+  // --- App state ---
+  const state = {
+    clocks: [
+      {tz:Intl.DateTimeFormat().resolvedOptions().timeZone, city:'local'},
+      {tz:'Asia/Kolkata', city:'mumbai'},
+      {tz:'America/New_York', city:'new york'},
+      {tz:'Europe/London', city:'london'}
+    ]
+  };
+
+  // --- helpers ---
+  function fmtTime(date, tz){
+    const opts = {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true,timeZone:tz};
+    return new Intl.DateTimeFormat(undefined, opts).format(date);
+  }
+  function fmtShort(date,tz){
+    const opts = {hour:'2-digit',minute:'2-digit',hour12:true,timeZone:tz};
+    return new Intl.DateTimeFormat(undefined, opts).format(date);
+  }
+
+  // --- rendering world clocks ---
+  const grid = document.getElementById('clockGrid');
+  function renderClocks(filter=''){
+    grid.innerHTML='';
+    const f = filter.trim().toLowerCase();
+    state.clocks.forEach((c,idx)=>{
+      const label = (c.city||c.tz).toLowerCase();
+      if(f && !label.includes(f) && !c.tz.toLowerCase().includes(f)) return;
+      const el = document.createElement('div'); el.className='card';
+      const tzEl = document.createElement('div'); tzEl.className='tz'; tzEl.textContent=c.tz;
+      const timeEl = document.createElement('div'); timeEl.className='time'; timeEl.dataset.tz=c.tz; timeEl.dataset.idx=idx;
+      const cityEl = document.createElement('div'); cityEl.className='city'; cityEl.textContent=(c.city||c.tz);
+      const remove = document.createElement('button'); remove.className='btn'; remove.textContent='remove'; remove.style.float='right'; remove.onclick=()=>{state.clocks.splice(idx,1);renderClocks(document.getElementById('searchCity').value)};
+      el.appendChild(remove);
+      el.appendChild(tzEl); el.appendChild(timeEl); el.appendChild(cityEl);
+      grid.appendChild(el);
+    });
+  }
+
+  // update times every 250ms for smoothness
+  function tick(){
+    const now = new Date();
+    document.getElementById('localTime').textContent = fmtShort(now, Intl.DateTimeFormat().resolvedOptions().timeZone);
+    document.querySelectorAll('.time').forEach(el=>{
+      const tz = el.dataset.tz;
+      el.textContent = fmtTime(now, tz);
+    });
+  }
+  setInterval(tick, 250);
+  renderClocks();
+
+  // search
+  document.getElementById('searchCity').addEventListener('input', e=>renderClocks(e.target.value));
+
+  // modal for adding city
+  document.getElementById('openAdd').addEventListener('click', ()=>{
+    const root = document.getElementById('modalRoot');
+    root.innerHTML = `
+      <div class="modal-backdrop">
+        <div class="modal card">
+          <h3>add city / timezone</h3>
+          <div class="field">
+            <label>pick a timezone (or paste an IANA name)</label>
+            <select id="tzSelect">
+              ${TIMEZONES.map(t=>`<option value="${t.tz}">${t.city} — ${t.tz}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field">
+            <label>display name (optional)</label>
+            <input id="displayName" placeholder="e.g. my hometown" />
+          </div>
+          <footer class="modal-actions">
+            <button class="btn" id="cancelAdd">cancel</button>
+            <button class="btn primary" id="confirmAdd">add</button>
+          </footer>
+        </div>
+      </div>
+    `;
+    document.getElementById('cancelAdd').onclick = ()=>{root.innerHTML=''};
+    document.getElementById('confirmAdd').onclick = ()=>{
+      const tz = document.getElementById('tzSelect').value;
+      const display = document.getElementById('displayName').value.trim();
+      state.clocks.push({tz:tz, city: display || tz.split('/').pop().replace('_',' ')});
+      root.innerHTML=''; renderClocks(document.getElementById('searchCity').value);
+    };
+  });
+
+  // --- tabs ---
+  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    const target = t.dataset.tab;
+    document.querySelectorAll('.view').forEach(v=>v.style.display=(v.id===target?'':'none'));
+  }));
+
+  // --- Stopwatch implementation ---
+  let swRunning=false, swStart=0, swElapsed=0, swTimer=null, lapIndex=0;
+  const swTimeEl = document.getElementById('swTime');
+  const swStartBtn = document.getElementById('swStart');
+  const swLapBtn = document.getElementById('swLap');
+  const swResetBtn = document.getElementById('swReset');
+  const lapsEl = document.getElementById('laps');
+
+  function formatStopwatch(ms){
+    const cent = Math.floor(ms%1000/10);
+    const s = Math.floor(ms/1000)%60; const m = Math.floor(ms/60000);
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(cent).padStart(2,'0')}`;
+  }
+  function swTick(){
+    const now = performance.now();
+    const ms = swElapsed + (swRunning ? (now - swStart) : 0);
+    swTimeEl.textContent = formatStopwatch(ms);
+  }
+  swTimer=setInterval(swTick, 50);
+
+  swStartBtn.onclick = ()=>{
+    if(!swRunning){ // start
+      swRunning=true; swStart=performance.now(); swStartBtn.textContent='pause'; swLapBtn.disabled=false; swResetBtn.disabled=false;
+    } else { // pause
+      swRunning=false; swElapsed += performance.now()-swStart; swStartBtn.textContent='start';
+    }
+  };
+  swLapBtn.onclick = ()=>{
+    const now = performance.now(); const ms = swElapsed + (swRunning ? (now - swStart) : 0);
+    const div = document.createElement('div'); div.className='lap'; div.innerHTML = `<div>lap ${++lapIndex}</div><div>${formatStopwatch(ms)}</div>`;
+    lapsEl.prepend(div);
+  };
+  swResetBtn.onclick = ()=>{
+    swRunning=false; swStart=0; swElapsed=0; lapIndex=0; swStartBtn.textContent='start'; swLapBtn.disabled=true; swResetBtn.disabled=true; lapsEl.innerHTML=''; swTick();
+  };
+
+  // --- Timer implementation ---
+  let tTotal=0,tRemaining=0,tInterval=null,tRunning=false;
+  const tDisplay = document.getElementById('tDisplay');
+  const tStart = document.getElementById('tStart');
+  const tPause = document.getElementById('tPause');
+  const tReset = document.getElementById('tReset');
+  const tHours = document.getElementById('tHours');
+  const tMins = document.getElementById('tMins');
+  const tSecs = document.getElementById('tSecs');
+  const progressPath = document.getElementById('progressPath');
+
+  function formatTimer(sec){
+    const h = Math.floor(sec/3600); const m = Math.floor(sec%3600/60); const s = Math.floor(sec%60);
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+  function updateProgress(){
+    if(tTotal<=0){ progressPath.setAttribute('d',''); return; }
+    const frac = 1 - (tRemaining / tTotal); // fraction completed
+    const angle = frac * 2 * Math.PI - Math.PI/2; // start top
+    const r = 45; const cx=50, cy=50;
+    const x = cx + r * Math.cos(angle); const y = cy + r * Math.sin(angle);
+    const large = frac > 0.5 ? 1 : 0;
+    const d = `M ${cx} ${cy - r} A ${r} ${r} 0 ${large} 1 ${x} ${y}`;
+    progressPath.setAttribute('d', d);
+  }
+
+  function stopTone(){ if(window._tone){ try{ window._tone.stop(); }catch(e){} window._tone=null; } }
+  function playTone(){ // short beep using WebAudio
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.type='sine'; o.frequency.value=880; g.gain.value=0.001;
+      o.connect(g); g.connect(ctx.destination);
+      o.start(); g.gain.exponentialRampToValueAtTime(0.15, ctx.currentTime + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.6);
+      o.stop(ctx.currentTime + 0.7);
+      window._tone=o;
+    }catch(e){console.warn('tone failed',e)}
+  }
+
+  tStart.onclick = ()=>{
+    if(!tRunning){
+      const h = Number(tHours.value)||0; const m = Number(tMins.value)||0; const s = Number(tSecs.value)||0;
+      tTotal = h*3600 + m*60 + s; if(tTotal<=0) return alert('set a duration');
+      tRemaining = tTotal; tRunning=true; tStart.textContent='pause'; tPause.disabled=false; tReset.disabled=false;
+      tInterval = setInterval(()=>{
+        tRemaining -= 1; if(tRemaining<=0){ clearInterval(tInterval); tRunning=false; tRemaining=0; tStart.textContent='start'; playTone(); }
+        tDisplay.textContent = formatTimer(tRemaining);
+        updateProgress();
+      }, 1000);
+      tDisplay.textContent = formatTimer(tRemaining);
+      updateProgress();
+    } else { // pause
+      clearInterval(tInterval); tRunning=false; tStart.textContent='start';
+    }
+  };
+  tPause.onclick = ()=>{
+    if(tRunning){ clearInterval(tInterval); tRunning=false; tStart.textContent='start'; }
+  };
+  tReset.onclick = ()=>{
+    clearInterval(tInterval); tRunning=false; tTotal=0; tRemaining=0; tDisplay.textContent='00:00:00'; tStart.textContent='start'; tPause.disabled=true; tReset.disabled=true; updateProgress(); stopTone();
+  };
+
+  // initialize display
+  tDisplay.textContent='00:00:00';
+
+  // small accessibility: keyboard to switch tabs (1,2,3)
+  window.addEventListener('keydown', (e)=>{
+    if(e.key==='1'){document.querySelector('[data-tab="world"]').click();}
+    if(e.key==='2'){document.querySelector('[data-tab="stopwatch"]').click();}
+    if(e.key==='3'){document.querySelector('[data-tab="timer"]').click();}
+  });
+
+})();
+</script>
+</body>
+</html>
