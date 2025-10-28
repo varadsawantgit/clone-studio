@@ -1,122 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Clone Studio</title>
-
-  <style>
-    /* ----- Global Styles ----- */
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: "Poppins", sans-serif;
-      background: radial-gradient(circle at top left, #b30000, #660000);
-      color: #fff;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      background-attachment: fixed;
-      overflow-x: hidden;
-    }
-
-    /* Subtle gold texture overlay */
-    body::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(
-        45deg,
-        rgba(255, 215, 0, 0.05),
-        rgba(255, 215, 0, 0.05) 2px,
-        transparent 2px,
-        transparent 6px
-      );
-      pointer-events: none;
-    }
-
-    h1 {
-      font-family: "Cinzel Decorative", serif;
-      font-weight: 700;
-      font-size: 2.5rem;
-      color: #ffd700;
-      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-      margin-bottom: 30px;
-    }
-
-    /* ----- Grid Layout ----- */
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 30px;
-      width: 90%;
-      max-width: 700px;
-      z-index: 1;
-    }
-
-    /* ----- Card Styles ----- */
-    .card {
-      background: linear-gradient(145deg, #8b0000, #a30000);
-      border: 2px solid #ffd700;
-      border-radius: 20px;
-      padding: 40px 20px;
-      text-align: center;
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: #e0e0e0;
-      box-shadow: 0 0 15px rgba(255, 215, 0, 0.3),
-                  inset 0 0 8px rgba(0, 128, 0, 0.3);
-      transition: transform 0.2s ease, box-shadow 0.3s ease;
-      cursor: pointer;
-    }
-
-    .card:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 25px rgba(255, 215, 0, 0.6),
-                  inset 0 0 10px rgba(0, 128, 0, 0.5);
-      color: #fff;
-    }
-
-    /* ----- Footer (optional) ----- */
-    footer {
-      position: absolute;
-      bottom: 15px;
-      font-size: 0.9rem;
-      color: rgba(255, 255, 255, 0.7);
-      letter-spacing: 1px;
-    }
-
-    @media (max-width: 480px) {
-      h1 {
-        font-size: 2rem;
-      }
-      .card {
-        font-size: 1.3rem;
-        padding: 30px 15px;
-      }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>iPhone Apps Home</title>
+<style>
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: radial-gradient(circle at top, #222 0%, #000 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+  .app-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 80px);
+    gap: 20px;
+  }
+  .app {
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  .app:hover {
+    transform: scale(1.1);
+  }
+  .icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    margin-bottom: 5px;
+  }
+  .clock-icon {
+    background: radial-gradient(circle at center, #000 60%, #333 100%);
+    border: 2px solid #555;
+    position: relative;
+  }
+  .clock-icon::before, .clock-icon::after {
+    content: '';
+    position: absolute;
+    background: white;
+    left: 50%;
+    top: 50%;
+    transform-origin: bottom center;
+  }
+  .clock-icon::before {
+    width: 2px;
+    height: 15px;
+    transform: translate(-50%, -15%) rotate(120deg);
+  }
+  .clock-icon::after {
+    width: 3px;
+    height: 10px;
+    transform: translate(-50%, -10%) rotate(10deg);
+  }
+  .calc-icon {
+    background: linear-gradient(to bottom, #222, #111);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 3px;
+    padding: 5px;
+  }
+  .calc-icon div {
+    background: orange;
+    border-radius: 4px;
+  }
+</style>
 </head>
-
 <body>
-  <h1>Clone Studio</h1>
-
-  <div class="card-grid">
-    <div class="card" onclick="openPage('number-puzzle.html')">Number Puzzle</div>
-    <div class="card" onclick="openPage('calculator.html')">Calculator</div>
+  <h1>iPhone Apps</h1>
+  <div class="app-grid">
+    <a class="app" href="clock.html">
+      <div class="icon clock-icon"></div>
+         </a>
+    <a class="app" href="calculator.html">
+      <div class="icon calc-icon">
+        <div></div><div></div><div></div><div></div>
+      </div>
+     
+    </a>
   </div>
-
-  <footer>© 2025 Clone Studio</footer>
-
-  <script>
-    // ----- JavaScript Navigation -----
-    function openPage(page) {
-      window.location.href = page;
-    }
-  </script>
 </body>
 </html>
-
-
