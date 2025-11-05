@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Analytics App - World Bank Data</title>
+
+<!-- Bootstrap & Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+  font-family: "Poppins", system-ui, sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fffaf0, #f0f8ff);
+  color: #222;
+  display: flex;
+  flex-direction: column;
+}
+header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+header h1 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #0d6efd;
+}
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  background: linear-gradient(135deg, #0d6efd, #007bff);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 8px 16px;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(13,110,253,0.3);
+  transition: all 0.3s ease;
+}
+.btn-back:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(13,110,253,0.4);
+  color: white;
+}
+main {
+  flex: 1;
+  padding: 20px;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.card-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+.card-analytics {
+  flex: 1 1 200px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(8px);
+  border-radius: 15px;
+  padding: 15px 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+.card-analytics:hover {
+  transform: translateY(-3px);
+}
+.card-analytics h4 {
+  font-weight: 600;
+  color: #0d6efd;
+}
+.chart-container {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(8px);
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  margin-bottom: 30px;
+}
+.year-selector {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  align-items: center;
+}
+footer {
+  text-align: center;
+  padding: 10px;
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+</style>
+</head>
+<body>
+
+<header>
+<h1><i class="bi bi-bar-chart-fill"></i> Analytics Dashboard</h1>
+<a href="index.html" class="btn-back"><i class="bi bi-arrow-left"></i> Home</a>
+</header>
+
+<main>
+  <!-- Year Selector -->
+  <div class="year-selector">
+    <label for="yearSelect" class="form-label">Select Year:</label>
+    <select id="yearSelect" class="form-select" style="width:100px;">
+      <option>2022</option>
+      <option>2021</option>
+      <option>2020</option>
+      <option>2019</option>
+      <option>2018</option>
+    </select>
+  </div>
+
+  <!-- Overview Cards -->
+  <div class="card-container">
+    <div class="card-analytics">
+      <h4>Total Users</h4>
+      <p id="totalUsers">Loading...</p>
+    </div>
+    <div class="card-analytics">
+      <h4>Revenue ($)</h4>
+      <p id="revenue">Loading...</p>
+    </div>
+  </div>
+
+  <!-- Country Distribution Chart -->
+  <div class="chart-container">
+    <h5>Users by Country (Population-based)</h5>
+    <canvas id="countryChart" height="120"></canvas>
+  </div>
+</main>
+
+<footer>© 2025 — Analytics App</footer>
+
+<script>
+// Utility function
+function formatNumber(num){ return num.toLocaleString(); }
+
+// Function to fetch and render data
+function fetchAndRender(year){
+  document.getElementById('totalUsers').textContent = 'Loading...';
+  document.getElementById('revenue').textContent = 'Loading...';
+
+  fetch(`https://api.worldbank.org/v2/country/all/indicator/SP.POP.TOTL?date=${year}&format=json`)
+    .then(res=>res.json())
+    .then(data=>{
+      const countriesPop = data[1].filter(c=>c.value);
+
+      // Top 10 countries by population
+      const topCountries = countriesPop.sort((a,b)=>b.value-a.value).slice(0,10);
+      const labels = topCountries.map(c=>c.country.value);
+      const populations = topCountries.map(c=>c.value);
+
+      // Metrics
+      const totalUsers = populations.reduce((a,b)=>a+b,0);
+      const totalRevenue = Math.floor(totalUsers * 0.2); // simulate revenue
+
+      document.getElementById('totalUsers').textContent = formatNumber(totalUsers);
+      document.getElementById('revenue').textContent = formatNumber(totalRevenue);
+
+      // Render chart
+      const ctx = document.getElementById('countryChart').getContext('2d');
+      if(window.countryChartInstance) window.countryChartInstance.destroy();
+      window.countryChartInstance = new Chart(ctx,{
+        type:'bar',
+        data:{labels:labels,datasets:[{label:'Population',data:populations,backgroundColor:'#0d6efd'}]},
+        options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+      });
+    })
+    .catch(err=>{
+      console.error('Failed to fetch World Bank data:', err);
+      document.getElementById('totalUsers').textContent = 'Error';
+      document.getElementById('revenue').textContent = 'Error';
+    });
+}
+
+// Initial render
+const yearSelect = document.getElementById('yearSelect');
+fetchAndRender(yearSelect.value);
+
+// Update on year change
+yearSelect.addEventListener('change', ()=>fetchAndRender(yearSelect.value));
+</script>
+
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>File Manager with Folder Navigation</title>
+
+<!-- Bootstrap & Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+
+<style>
+  body {
+    font-family: "Poppins", system-ui, sans-serif;
+    min-height: 100vh;
+    color: #222;
+    background: linear-gradient(135deg, #fffaf0, #f0f8ff);
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  header h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #0d6efd;
+  }
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    background: linear-gradient(135deg, #0d6efd, #007bff);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 8px 16px;
+    text-decoration: none;
+    box-shadow: 0 2px 6px rgba(13,110,253,0.3);
+    transition: all 0.3s ease;
+  }
+  .btn-back:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(13,110,253,0.4);
+    color: white;
+  }
+  main {
+    flex: 1;
+    padding: 20px;
+    width: 100%;
+  }
+  .breadcrumb-container {
+    margin-bottom: 15px;
+  }
+  .file-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px,1fr));
+    gap: 15px;
+  }
+  .file-card {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(8px);
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .file-card:hover {
+    transform: translateY(-5px);
+  }
+  .file-icon {
+    font-size: 2rem;
+    color: #0d6efd;
+    margin-bottom: 5px;
+  }
+  .file-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+    word-break: break-word;
+  }
+  footer {
+    text-align: center;
+    padding: 10px;
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1><i class="bi bi-folder-fill"></i> File Manager</h1>
+  <a href="index.html" class="btn-back"><i class="bi bi-arrow-left"></i> Home</a>
+</header>
+
+<main>
+  <nav class="breadcrumb-container" id="breadcrumb"></nav>
+  <div class="mb-3">
+    <input type="text" id="folderNameInput" class="form-control mb-2" placeholder="New Folder Name"/>
+    <button id="createFolderBtn" class="btn btn-primary me-2">Create Folder</button>
+    <input type="file" id="fileInput" multiple class="form-control d-inline-block w-auto"/>
+  </div>
+  <div class="file-container" id="fileContainer"></div>
+</main>
+
+<footer>© 2025 — File Manager App</footer>
+
+<!-- Modal -->
+<div class="modal fade" id="fileModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitle"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" id="deleteBtn">Delete</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const fileContainer = document.getElementById('fileContainer');
+const createFolderBtn = document.getElementById('createFolderBtn');
+const folderNameInput = document.getElementById('folderNameInput');
+const fileInput = document.getElementById('fileInput');
+const breadcrumb = document.getElementById('breadcrumb');
+const modal = new bootstrap.Modal(document.getElementById('fileModal'));
+const modalTitle = document.getElementById('modalTitle');
+const modalBody = document.getElementById('modalBody');
+const deleteBtn = document.getElementById('deleteBtn');
+
+let filesData = JSON.parse(localStorage.getItem('filesData') || '[]');
+let path = []; // current folder path
+let selectedItemIndex = null;
+
+function saveData() {
+  localStorage.setItem('filesData', JSON.stringify(filesData));
+}
+
+function getCurrentFolder() {
+  let folder = filesData;
+  for(const p of path){
+    folder = folder.find(f => f.type === 'folder' && f.name === p).children;
+  }
+  return folder;
+}
+
+function renderFiles() {
+  const folder = getCurrentFolder();
+  fileContainer.innerHTML = '';
+  folder.forEach((item,index)=>{
+    const card = document.createElement('div');
+    card.className = 'file-card';
+    card.innerHTML = `
+      <div class="file-icon">${item.type==='folder'?'<i class="bi bi-folder-fill"></i>':'<i class="bi bi-file-earmark-fill"></i>'}</div>
+      <div class="file-name">${item.name}</div>
+    `;
+    card.addEventListener('click', ()=>{
+      if(item.type==='folder'){
+        path.push(item.name);
+        renderBreadcrumb();
+        renderFiles();
+      } else {
+        openModal(index);
+      }
+    });
+    fileContainer.appendChild(card);
+  });
+}
+
+function renderBreadcrumb(){
+  breadcrumb.innerHTML = '';
+  const rootCrumb = document.createElement('span');
+  rootCrumb.style.cursor = 'pointer';
+  rootCrumb.innerHTML = '<strong>Root</strong>';
+  rootCrumb.addEventListener('click', ()=>{
+    path = [];
+    renderBreadcrumb();
+    renderFiles();
+  });
+  breadcrumb.appendChild(rootCrumb);
+  
+  path.forEach((p,index)=>{
+    const sep = document.createElement('span');
+    sep.textContent = ' / ';
+    breadcrumb.appendChild(sep);
+    
+    const crumb = document.createElement('span');
+    crumb.style.cursor = 'pointer';
+    crumb.innerHTML = `<strong>${p}</strong>`;
+    crumb.addEventListener('click', ()=>{
+      path = path.slice(0,index+1);
+      renderBreadcrumb();
+      renderFiles();
+    });
+    breadcrumb.appendChild(crumb);
+  });
+}
+
+function openModal(index){
+  const folder = getCurrentFolder();
+  selectedItemIndex = index;
+  const item = folder[index];
+  modalTitle.textContent = item.name;
+  modalBody.innerHTML = `<p>Type: ${item.type}</p>${item.type==='file'?'<p>Size: '+item.size+' bytes</p>':''}`;
+  modal.show();
+}
+
+createFolderBtn.addEventListener('click', ()=>{
+  const name = folderNameInput.value.trim();
+  if(!name) return alert('Folder name cannot be empty');
+  const folder = getCurrentFolder();
+  folder.push({type:'folder', name, children:[]});
+  folderNameInput.value='';
+  saveData();
+  renderFiles();
+});
+
+fileInput.addEventListener('change', ()=>{
+  const folder = getCurrentFolder();
+  Array.from(fileInput.files).forEach(file=>{
+    folder.push({type:'file', name:file.name, size:file.size});
+  });
+  fileInput.value='';
+  saveData();
+  renderFiles();
+});
+
+deleteBtn.addEventListener('click', ()=>{
+  const folder = getCurrentFolder();
+  if(selectedItemIndex !== null){
+    if(confirm('Are you sure you want to delete this item?')){
+      folder.splice(selectedItemIndex,1);
+      saveData();
+      renderFiles();
+      modal.hide();
+    }
+  }
+});
+
+// Initial render
+renderBreadcrumb();
+renderFiles();
+</script>
+</body>
+</html>

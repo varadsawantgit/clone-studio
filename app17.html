@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mini Browser</title>
+
+<!-- Bootstrap & Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+<style>
+body {
+  font-family: "Poppins", system-ui, sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fffaf0, #f0f8ff);
+  display: flex;
+  flex-direction: column;
+  color: #222;
+}
+header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+header h1 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #0d6efd;
+}
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  background: linear-gradient(135deg, #0d6efd, #007bff);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 8px 16px;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(13,110,253,0.3);
+  transition: all 0.3s ease;
+}
+.btn-back:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(13,110,253,0.4);
+  color: white;
+}
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  width: 100%;
+}
+.browser-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.browser-bar input {
+  flex: 1;
+}
+iframe {
+  flex: 1;
+  width: 100%;
+  border-radius: 15px;
+  border: 1px solid #ccc;
+}
+footer {
+  text-align: center;
+  padding: 10px;
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+</style>
+</head>
+<body>
+
+<header>
+<h1><i class="bi bi-browser-safari"></i> Mini Browser</h1>
+<a href="index.html" class="btn-back"><i class="bi bi-arrow-left"></i> Home</a>
+</header>
+
+<main>
+  <div class="browser-bar">
+    <button id="backBtn" class="btn btn-primary"><i class="bi bi-arrow-left"></i></button>
+    <button id="forwardBtn" class="btn btn-primary"><i class="bi bi-arrow-right"></i></button>
+    <input type="text" id="urlInput" class="form-control" placeholder="Enter URL or search terms">
+    <button id="goBtn" class="btn btn-success"><i class="bi bi-arrow-right-circle"></i> Go</button>
+  </div>
+  <iframe id="browserFrame" src="https://www.bing.com"></iframe>
+</main>
+
+<footer>© 2025 — Mini Browser App</footer>
+
+<script>
+const iframe = document.getElementById('browserFrame');
+const urlInput = document.getElementById('urlInput');
+const goBtn = document.getElementById('goBtn');
+const backBtn = document.getElementById('backBtn');
+const forwardBtn = document.getElementById('forwardBtn');
+
+let historyStack = ['https://www.bing.com'];
+let currentIndex = 0;
+
+function loadURL(url){
+  if(!url.match(/^https?:\/\//)){
+    // Treat as search query with Bing
+    url = 'https://www.bing.com/search?q=' + encodeURIComponent(url);
+  }
+  iframe.src = url;
+  // Manage history
+  historyStack = historyStack.slice(0, currentIndex+1);
+  historyStack.push(url);
+  currentIndex++;
+  urlInput.value = url;
+}
+
+goBtn.addEventListener('click', ()=>{
+  const input = urlInput.value.trim();
+  if(input) loadURL(input);
+});
+
+urlInput.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') goBtn.click();
+});
+
+backBtn.addEventListener('click', ()=>{
+  if(currentIndex>0){
+    currentIndex--;
+    iframe.src = historyStack[currentIndex];
+    urlInput.value = historyStack[currentIndex];
+  }
+});
+
+forwardBtn.addEventListener('click', ()=>{
+  if(currentIndex < historyStack.length-1){
+    currentIndex++;
+    iframe.src = historyStack[currentIndex];
+    urlInput.value = historyStack[currentIndex];
+  }
+});
+
+// Initial load
+urlInput.value = historyStack[currentIndex];
+</script>
+
+</body>
+</html>

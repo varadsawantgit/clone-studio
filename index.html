@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>101 Apps Dashboard</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg: #ffffff;
+      --card: #f7f8fa;
+      --muted: #6c757d;
+      --gap: 12px;
+    }
+
+    html,body{
+      height:100%;
+      margin:0;
+      background:var(--bg);
+      font-family: Inter, "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color:#222;
+    }
+
+    .wrap{
+      max-width:1180px;
+      margin:28px auto;
+      padding:20px;
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:18px;
+    }
+
+    header h1{
+      font-size:1.15rem;
+      margin:0;
+      font-weight:600;
+      letter-spacing:0.2px;
+    }
+
+    .icon-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: var(--gap);
+    }
+
+    .tile{
+      background:var(--card);
+      border-radius:12px;
+      padding:10px;
+      text-align:center;
+      transition:transform .15s ease, box-shadow .15s ease;
+      cursor:pointer;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:96px;
+      box-shadow: 0 1px 4px rgba(16,24,40,0.04);
+      border: 1px solid rgba(16,24,40,0.04);
+      text-decoration:none !important;
+    }
+
+    .tile:hover{
+      transform: translateY(-6px);
+      box-shadow: 0 8px 22px rgba(16,24,40,0.10);
+    }
+
+    .tile i{
+      font-size:1.6rem;
+      line-height:1;
+    }
+
+    .tile .title{
+      font-size:0.82rem;
+      font-weight:500;
+      color:#222;
+      white-space:nowrap;
+      text-overflow:ellipsis;
+      overflow:hidden;
+      max-width:100%;
+    }
+
+    footer{
+      margin-top:18px;
+      color:var(--muted);
+      text-align:center;
+      font-size:0.85rem;
+    }
+
+    .c-blue{ color:#0d6efd; }
+    .c-red{ color:#dc3545; }
+    .c-green{ color:#198754; }
+    .c-yellow{ color:#ffb703; }
+    .c-purple{ color:#6f42c1; }
+    .c-pink{ color:#e83e8c; }
+    .c-cyan{ color:#0dcaf0; }
+    .c-orange{ color:#fd7e14; }
+    .c-teal{ color:#20c997; }
+    .c-gray{ color:#495057; }
+
+    @media (max-width:420px){
+      .tile{ min-height:84px; padding:8px; }
+      .tile i{ font-size:1.4rem; }
+      .icon-grid{ gap:10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <i class="bi bi-grid-fill c-blue" style="font-size:1.35rem;"></i>
+      <div><h1>101 Apps — Compact Dashboard</h1></div>
+    </header>
+
+    <div class="icon-grid">
+      <!-- 101 App Tiles -->
+      <a class="tile" href="app1.html"><i class="bi bi-calculator-fill c-blue"></i><div class="title">Calculator</div></a>
+      <a class="tile" href="app2.html"><i class="bi bi-journal-text c-yellow"></i><div class="title">Notes</div></a>
+      <a class="tile" href="app3.html"><i class="bi bi-check2-square c-green"></i><div class="title">To-Do List</div></a>
+      <a class="tile" href="app4.html"><i class="bi bi-cloud-sun-fill c-orange"></i><div class="title">Weather</div></a>
+      <a class="tile" href="app5.html"><i class="bi bi-music-note-beamed c-pink"></i><div class="title">Music Player</div></a>
+      <a class="tile" href="app6.html"><i class="bi bi-image-fill c-purple"></i><div class="title">Photo Gallery</div></a>
+      <a class="tile" href="app7.html"><i class="bi bi-stopwatch-fill c-red"></i><div class="title">Timer</div></a>
+      <a class="tile" href="app8.html"><i class="bi bi-gear-fill c-cyan"></i><div class="title">Settings</div></a>
+      <a class="tile" href="app9.html"><i class="bi bi-calendar-event-fill c-green"></i><div class="title">Calendar</div></a>
+      <a class="tile" href="app10.html"><i class="bi bi-camera-fill c-teal"></i><div class="title">Camera</div></a>
+      <a class="tile" href="app11.html"><i class="bi bi-geo-alt-fill c-red"></i><div class="title">Maps</div></a>
+      <a class="tile" href="app12.html"><i class="bi bi-chat-dots-fill c-blue"></i><div class="title">Chat</div></a>
+      <a class="tile" href="app13.html"><i class="bi bi-person-lines-fill c-yellow"></i><div class="title">Contacts</div></a>
+      <a class="tile" href="app14.html"><i class="bi bi-newspaper c-purple"></i><div class="title">News</div></a>
+      <a class="tile" href="app15.html"><i class="bi bi-folder-fill c-gray"></i><div class="title">File Manager</div></a>
+      <a class="tile" href="app16.html"><i class="bi bi-envelope-fill c-blue"></i><div class="title">Email</div></a>
+      <a class="tile" href="app17.html"><i class="bi bi-browser-chrome c-orange"></i><div class="title">Browser</div></a>
+      <a class="tile" href="app18.html"><i class="bi bi-graph-up c-green"></i><div class="title">Analytics</div></a>
+      <a class="tile" href="app19.html"><i class="bi bi-wallet-fill c-yellow"></i><div class="title">Wallet</div></a>
+      <a class="tile" href="app20.html"><i class="bi bi-piggy-bank-fill c-purple"></i><div class="title">Budget Tracker</div></a>
+      <a class="tile" href="app21.html"><i class="bi bi-bar-chart-line-fill c-cyan"></i><div class="title">Stocks</div></a>
+      <a class="tile" href="app22.html"><i class="bi bi-heart-fill c-red"></i><div class="title">Health Monitor</div></a>
+      <a class="tile" href="app23.html"><i class="bi bi-activity c-pink"></i><div class="title">Workout</div></a>
+      <a class="tile" href="app24.html"><i class="bi bi-moon-stars-fill c-blue"></i><div class="title">Sleep Tracker</div></a>
+      <a class="tile" href="app25.html"><i class="bi bi-heart-pulse-fill c-red"></i><div class="title">Meditation</div></a>
+      <a class="tile" href="app26.html"><i class="bi bi-book-fill c-green"></i><div class="title">eBooks</div></a>
+      <a class="tile" href="app27.html"><i class="bi bi-bookmarks-fill c-yellow"></i><div class="title">Bookmarks</div></a>
+      <a class="tile" href="app28.html"><i class="bi bi-tag-fill c-orange"></i><div class="title">Coupons</div></a>
+      <a class="tile" href="app29.html"><i class="bi bi-cart-fill c-purple"></i><div class="title">Shopping</div></a>
+      <a class="tile" href="app30.html"><i class="bi bi-credit-card-fill c-teal"></i><div class="title">Payments</div></a>
+      <a class="tile" href="app31.html"><i class="bi bi-receipt-cutoff c-gray"></i><div class="title">Invoices</div></a>
+      <a class="tile" href="app32.html"><i class="bi bi-graph-down c-blue"></i><div class="title">Reports</div></a>
+      <a class="tile" href="app33.html"><i class="bi bi-briefcase-fill c-purple"></i><div class="title">Projects</div></a>
+      <a class="tile" href="app34.html"><i class="bi bi-people-fill c-green"></i><div class="title">Teams</div></a>
+      <a class="tile" href="app35.html"><i class="bi bi-hand-thumbs-up-fill c-pink"></i><div class="title">Feedback</div></a>
+      <a class="tile" href="app36.html"><i class="bi bi-life-preserver c-cyan"></i><div class="title">Support</div></a>
+      <a class="tile" href="app37.html"><i class="bi bi-chat-left-quote-fill c-blue"></i><div class="title">Messaging</div></a>
+      <a class="tile" href="app38.html"><i class="bi bi-telephone-fill c-orange"></i><div class="title">Phone</div></a>
+      <a class="tile" href="app39.html"><i class="bi bi-briefcase c-gray"></i><div class="title">Resume</div></a>
+      <a class="tile" href="app40.html"><i class="bi bi-people c-yellow"></i><div class="title">Social Feed</div></a>
+      <a class="tile" href="app41.html"><i class="bi bi-tv-fill c-purple"></i><div class="title">TV Guide</div></a>
+      <a class="tile" href="app42.html"><i class="bi bi-film c-red"></i><div class="title">Movies</div></a>
+      <a class="tile" href="app43.html"><i class="bi bi-controller c-green"></i><div class="title">Games</div></a>
+      <a class="tile" href="app44.html"><i class="bi bi-gift-fill c-pink"></i><div class="title">Gifts</div></a>
+      <a class="tile" href="app45.html"><i class="bi bi-ticket-fill c-blue"></i><div class="title">Tickets</div></a>
+      <a class="tile" href="app46.html"><i class="bi bi-house-fill c-teal"></i><div class="title">Home</div></a>
+      <a class="tile" href="app47.html"><i class="bi bi-lightbulb-fill c-yellow"></i><div class="title">Ideas</div></a>
+      <a class="tile" href="app48.html"><i class="bi bi-wrench c-gray"></i><div class="title">Tools</div></a>
+      <a class="tile" href="app49.html"><i class="bi bi-hammer c-orange"></i><div class="title">Maintenance</div></a>
+      <a class="tile" href="app50.html"><i class="bi bi-egg-fried c-purple"></i><div class="title">Recipes</div></a>
+      <a class="tile" href="app51.html"><i class="bi bi-basket-fill c-green"></i><div class="title">Groceries</div></a>
+      <a class="tile" href="app52.html"><i class="bi bi-scissors c-blue"></i><div class="title">Scanner</div></a>
+      <a class="tile" href="app53.html"><i class="bi bi-translate c-cyan"></i><div class="title">Translator</div></a>
+      <a class="tile" href="app54.html"><i class="bi bi-book c-yellow"></i><div class="title">Dictionary</div></a>
+      <a class="tile" href="app55.html"><i class="bi bi-journal c-pink"></i><div class="title">Journal</div></a>
+      <a class="tile" href="app56.html"><i class="bi bi-lightning-fill c-orange"></i><div class="title">Shortcuts</div></a>
+      <a class="tile" href="app57.html"><i class="bi bi-laptop-fill c-purple"></i><div class="title">Remote Desktop</div></a>
+      <a class="tile" href="app58.html"><i class="bi bi-terminal-fill c-gray"></i><div class="title">Terminal</div></a>
+      <a class="tile" href="app59.html"><i class="bi bi-code-slash c-blue"></i><div class="title">Code Editor</div></a>
+      <a class="tile" href="app60.html"><i class="bi bi-git c-green"></i><div class="title">Version Control</div></a>
+      <a class="tile" href="app61.html"><i class="bi bi-cpu-fill c-purple"></i><div class="title">System Monitor</div></a>
+      <a class="tile" href="app62.html"><i class="bi bi-server c-cyan"></i><div class="title">Server</div></a>
+      <a class="tile" href="app63.html"><i class="bi bi-cloud-arrow-up-fill c-blue"></i><div class="title">Cloud Upload</div></a>
+      <a class="tile" href="app64.html"><i class="bi bi-cloud-arrow-down-fill c-green"></i><div class="title">Cloud Download</div></a>
+      <a class="tile" href="app65.html"><i class="bi bi-shield-lock-fill c-red"></i><div class="title">Security</div></a>
+      <a class="tile" href="app66.html"><i class="bi bi-shield-check c-teal"></i><div class="title">VPN</div></a>
+      <a class="tile" href="app67.html"><i class="bi bi-people-fill c-yellow"></i><div class="title">Community</div></a>
+      <a class="tile" href="app68.html"><i class="bi bi-award-fill c-purple"></i><div class="title">Rewards</div></a>
+      <a class="tile" href="app69.html"><i class="bi bi-flag-fill c-red"></i><div class="title">Goals</div></a>
+      <a class="tile" href="app70.html"><i class="bi bi-pin-fill c-blue"></i><div class="title">Saved Places</div></a>
+      <a class="tile" href="app71.html"><i class="bi bi-graph-up-arrow c-green"></i><div class="title">Growth</div></a>
+      <a class="tile" href="app72.html"><i class="bi bi-cash-stack c-orange"></i><div class="title">Payroll</div></a>
+      <a class="tile" href="app73.html"><i class="bi bi-award c-pink"></i><div class="title">Badges</div></a>
+      <a class="tile" href="app74.html"><i class="bi bi-layers c-yellow"></i><div class="title">Layers</div></a>
+      <a class="tile" href="app75.html"><i class="bi bi-bug-fill c-green"></i><div class="title">Bug Tracker</div></a>
+      <a class="tile" href="app76.html"><i class="bi bi-file-earmark-medical-fill c-red"></i><div class="title">Medical</div></a>
+      <a class="tile" href="app77.html"><i class="bi bi-emoji-smile-fill c-pink"></i><div class="title">Emojis</div></a>
+      <a class="tile" href="app78.html"><i class="bi bi-wifi c-cyan"></i><div class="title">Network</div></a>
+      <a class="tile" href="app79.html"><i class="bi bi-gear-wide-connected c-gray"></i><div class="title">Integrations</div></a>
+      <a class="tile" href="app80.html"><i class="bi bi-brightness-alt-high-fill c-orange"></i><div class="title">Brightness</div></a>
+      <a class="tile" href="app81.html"><i class="bi bi-cloud-haze2 c-blue"></i><div class="title">Air Quality</div></a>
+      <a class="tile" href="app82.html"><i class="bi bi-geo-fill c-green"></i><div class="title">Nearby</div></a>
+      <a class="tile" href="app83.html"><i class="bi bi-briefcase-fill c-purple"></i><div class="title">Portfolio</div></a>
+      <a class="tile" href="app84.html"><i class="bi bi-trophy-fill c-yellow"></i><div class="title">Achievements</div></a>
+      <a class="tile" href="app85.html"><i class="bi bi-laptop c-blue"></i><div class="title">Learning</div></a>
+      <a class="tile" href="app86.html"><i class="bi bi-bar-chart c-green"></i><div class="title">Finance</div></a>
+      <a class="tile" href="app87.html"><i class="bi bi-pencil-fill c-red"></i><div class="title">Sketch</div></a>
+      <a class="tile" href="app88.html"><i class="bi bi-star-fill c-yellow"></i><div class="title">Ratings</div></a>
+      <a class="tile" href="app89.html"><i class="bi bi-tv c-orange"></i><div class="title">Streaming</div></a>
+      <a class="tile" href="app90.html"><i class="bi bi-controller c-pink"></i><div class="title">Arcade</div></a>
+      <a class="tile" href="app91.html"><i class="bi bi-hourglass-split c-gray"></i><div class="title">Pomodoro</div></a>
+      <a class="tile" href="app92.html"><i class="bi bi-clock-fill c-blue"></i><div class="title">World Clock</div></a>
+      <a class="tile" href="app93.html"><i class="bi bi-calendar-week-fill c-green"></i><div class="title">Planner</div></a>
+      <a class="tile" href="app94.html"><i class="bi bi-battery-full c-teal"></i><div class="title">Battery</div></a>
+      <a class="tile" href="app95.html"><i class="bi bi-box-seam c-purple"></i><div class="title">Storage</div></a>
+      <a class="tile" href="app96.html"><i class="bi bi-globe c-cyan"></i><div class="title">Browser Pro</div></a>
+      <a class="tile" href="app97.html"><i class="bi bi-lightning-charge-fill c-orange"></i><div class="title">Power</div></a>
+      <a class="tile" href="app98.html"><i class="bi bi-thermometer-half c-red"></i><div class="title">Temperature</div></a>
+      <a class="tile" href="app99.html"><i class="bi bi-camera-reels c-blue"></i><div class="title">Video Studio</div></a>
+      <a class="tile" href="app100.html"><i class="bi bi-rocket-takeoff-fill c-green"></i><div class="title">Startup</div></a>
+      <a class="tile" href="app101.html"><i class="bi bi-star-fill c-yellow"></i><div class="title">Favorites</div></a>
+    </div>
+
+    <footer>© 2025 — 101 apps • icons: bootstrap-icons • compact grid layout</footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

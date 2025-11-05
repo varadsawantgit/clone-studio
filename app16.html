@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Email App with Search</title>
+
+<!-- Bootstrap & Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+
+<style>
+body {
+  font-family: "Poppins", system-ui, sans-serif;
+  min-height: 100vh;
+  color: #222;
+  background: linear-gradient(135deg, #fffaf0, #f0f8ff);
+  display: flex;
+  flex-direction: column;
+}
+header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+header h1 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #0d6efd;
+}
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  background: linear-gradient(135deg, #0d6efd, #007bff);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 8px 16px;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(13,110,253,0.3);
+  transition: all 0.3s ease;
+}
+.btn-back:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(13,110,253,0.4);
+  color: white;
+}
+main {
+  flex: 1;
+  padding: 20px;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+button {
+  cursor: pointer;
+}
+.compose-container, .search-container {
+  margin-bottom: 20px;
+}
+.email-card {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(8px);
+  border-radius: 15px;
+  padding: 12px 15px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+.email-card:hover {
+  transform: translateY(-3px);
+}
+.email-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  color: #0d6efd;
+}
+.email-subject {
+  font-weight: 500;
+  margin: 5px 0;
+}
+.email-body {
+  font-size: 0.9rem;
+  color: #333;
+}
+footer {
+  text-align: center;
+  padding: 10px;
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+.modal-content {
+  border-radius: 20px;
+}
+</style>
+</head>
+<body>
+<header>
+<h1><i class="bi bi-envelope-fill"></i> Email App</h1>
+<a href="index.html" class="btn-back"><i class="bi bi-arrow-left"></i> Home</a>
+</header>
+
+<main>
+  <div class="compose-container">
+    <h5>Compose Email</h5>
+    <input type="text" id="toInput" class="form-control mb-2" placeholder="To"/>
+    <input type="text" id="subjectInput" class="form-control mb-2" placeholder="Subject"/>
+    <textarea id="bodyInput" class="form-control mb-2" rows="3" placeholder="Body"></textarea>
+    <button id="sendBtn" class="btn btn-primary">Send</button>
+  </div>
+
+  <div class="search-container">
+    <input type="text" id="searchInput" class="form-control" placeholder="Search emails by subject or recipient..."/>
+  </div>
+
+  <h5>Inbox</h5>
+  <div id="emailContainer"></div>
+</main>
+
+<footer>© 2025 — Email App</footer>
+
+<!-- Modal -->
+<div class="modal fade" id="emailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalSubject"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>To:</strong> <span id="modalTo"></span></p>
+        <p id="modalBodyText"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" id="deleteBtn">Delete</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const emailContainer = document.getElementById('emailContainer');
+const toInput = document.getElementById('toInput');
+const subjectInput = document.getElementById('subjectInput');
+const bodyInput = document.getElementById('bodyInput');
+const sendBtn = document.getElementById('sendBtn');
+const searchInput = document.getElementById('searchInput');
+
+const modal = new bootstrap.Modal(document.getElementById('emailModal'));
+const modalSubject = document.getElementById('modalSubject');
+const modalTo = document.getElementById('modalTo');
+const modalBodyText = document.getElementById('modalBodyText');
+const deleteBtn = document.getElementById('deleteBtn');
+
+let emails = JSON.parse(localStorage.getItem('emails') || '[]');
+let selectedIndex = null;
+let filteredEmails = [...emails];
+
+function saveEmails() {
+  localStorage.setItem('emails', JSON.stringify(emails));
+}
+
+function renderEmails() {
+  emailContainer.innerHTML = '';
+  if(filteredEmails.length === 0) {
+    emailContainer.innerHTML = '<p>No emails found.</p>';
+  }
+  filteredEmails.slice().reverse().forEach((email,index)=>{
+    const card = document.createElement('div');
+    card.className = 'email-card';
+    card.innerHTML = `
+      <div class="email-header">
+        <span>${email.to}</span>
+        <span>${new Date(email.date).toLocaleString()}</span>
+      </div>
+      <div class="email-subject">${email.subject}</div>
+      <div class="email-body">${email.body.substring(0,50)}${email.body.length>50?'...':''}</div>
+    `;
+    card.addEventListener('click', ()=>{
+      selectedIndex = emails.length - 1 - index; // reversed
+      openModal(emails[selectedIndex]);
+    });
+    emailContainer.appendChild(card);
+  });
+}
+
+function openModal(email){
+  modalSubject.textContent = email.subject;
+  modalTo.textContent = email.to;
+  modalBodyText.textContent = email.body;
+  modal.show();
+}
+
+sendBtn.addEventListener('click', ()=>{
+  const to = toInput.value.trim();
+  const subject = subjectInput.value.trim();
+  const body = bodyInput.value.trim();
+  if(!to || !subject || !body) return alert('All fields are required');
+  emails.push({to, subject, body, date:new Date()});
+  saveEmails();
+  filteredEmails = [...emails];
+  renderEmails();
+  toInput.value = '';
+  subjectInput.value = '';
+  bodyInput.value = '';
+  searchInput.value = '';
+});
+
+deleteBtn.addEventListener('click', ()=>{
+  if(selectedIndex !== null){
+    if(confirm('Delete this email?')){
+      emails.splice(selectedIndex,1);
+      saveEmails();
+      filteredEmails = [...emails];
+      renderEmails();
+      modal.hide();
+    }
+  }
+});
+
+searchInput.addEventListener('input', ()=>{
+  const query = searchInput.value.toLowerCase();
+  filteredEmails = emails.filter(email=>{
+    return email.subject.toLowerCase().includes(query) || email.to.toLowerCase().includes(query);
+  });
+  renderEmails();
+});
+
+// Initial render
+renderEmails();
+</script>
+</body>
+</html>
