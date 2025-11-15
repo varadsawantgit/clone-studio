@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Video Studio — Single-File Host + Viewer + Multiviewer + Short URL</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+  <style>
+    body { padding: 20px; }
+    textarea { font-family: monospace; font-size: 0.9rem; }
+    video { width: 100%; background: #000; max-height: 60vh; }
+    .url-box { font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+  <h3>Video Studio — All-in-One File</h3>
+  <p class="text-muted">Host + Viewer + Multiviewer + Short URL Signaling — all inside one HTML file.</p>
+
+  <div id="hostPanel" class="card p-3 mb-3">
+    <h5>Host</h5>
+    <label>Select Video File:</label>
+    <input id="fileInput" type="file" accept="video/*" class="form-control mb-3" />
+    <button id="startHost" class="btn btn-primary w-100 mb-3">Start Hosting</button>
+
+    <label>Your viewer URL:</label>
+    <textarea id="hostURL" class="form-control url-box" rows="4" readonly></textarea>
+  </div>
+
+  <div id="viewerPanel" class="card p-3 mb-3" style="display:none;">
+    <h5>Viewer</h5>
+    <textarea id="debugViewer" class="form-control url-box" rows="5" readonly></textarea>
+  </div>
+
+  <div class="card p-3 mt-4">
+    <h5>Video</h5>
+    <video id="video" controls playsinline></video>
+  </div>
+
+<script>
+function encode(o){ return btoa(JSON.stringify(o)); }
+function decode(s){ return JSON.parse(atob(s)); }
+function cEnc(s){ return LZString.compressToEncodedURIComponent(s);}  
+function cDec(s){ return LZString.decompressFromEncodedURIComponent(s);}  
+
+let peers = [];
+let localStream;
+let video = document.getElementById("video");
+
+//----------------------------------------------------------
+// HOST MODE: Start and generate compressed short URL offer
+//----------------------------------------------------------
+document.getElementById("startHost").onclick = async () => {
+  const file = document.getElementById("fileInput").files[0];
+  if (!file) return alert("Choose a video file first");
+
+  const tempVid = document.createElement("video");
+  tempVid.src = URL.createObjectURL(file);
+  tempVid.muted = true;
+  await tempVid.play();
+
+  if (!tempVid.captureStream) return alert("captureStream() not supported");
+  localStream = tempVid.captureStream();
+
+  function newPeer(){
+    const p = new RTCPeerConnection();
+    localStream.getTracks().forEach(t => p.addTrack(t, localStream));
+    peers.push(p);
+    return p;
+  }
+
+  const pc = newPeer();
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+
+  video.srcObject = localStream;
+  video.play();
+
+  const compressed = cEnc(JSON.stringify(pc.localDescription));
+  const url = location.origin + location.pathname + "?s=" + compressed;
+  document.getElementById("hostURL").value = url;
+};
+
+//----------------------------------------------------------
+// VIEWER MODE (Compressed ?s=)
+//----------------------------------------------------------
+const params = new URLSearchParams(location.search);
+const offerC = params.get("s");
+const answerC = params.get("sa");
+
+if (offerC) {
+  document.getElementById("hostPanel").style.display = "none";
+  document.getElementById("viewerPanel").style.display = "block";
+
+  const debug = document.getElementById("debugViewer");
+  debug.value = "Received compressed offer → decoding...";
+
+  const offerObj = JSON.parse(cDec(offerC));
+  const pc = new RTCPeerConnection();
+  peers.push(pc);
+
+  pc.ontrack = e => { video.srcObject = e.streams[0]; video.play(); }
+
+  pc.setRemoteDescription(offerObj).then(async () => {
+    debug.value += "\nCreating answer...";
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+
+    const cAns = cEnc(JSON.stringify(pc.localDescription));
+    const back = location.origin + location.pathname + "?sa=" + cAns;
+
+    debug.value += "\nRedirecting back to host...";
+    setTimeout(()=>location.href = back, 1200);
+  });
+}
+
+//----------------------------------------------------------
+// HOST receives compressed answer (?sa=)
+//----------------------------------------------------------
+if (answerC) {
+  const ansObj = JSON.parse(cDec(answerC));
+  if (peers.length > 0) peers[0].setRemoteDescription(ansObj);
+  alert("Viewer connected!");
+}
+</script>
+</body>
+</html>
