@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PeerDrop | 10GB Support</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f9fafb; font-family: system-ui, -apple-system, sans-serif; overflow: hidden; height: 100vh; }
+        #stage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+        .app-container { max-width: 400px; margin: 10vh auto; position: relative; z-index: 10; }
+        
+        .flying-paper {
+            position: absolute; width: 30px; height: 40px; background: white;
+            border: 1px solid #ddd; box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .id-card { background: white; border-radius: 24px; padding: 30px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; }
+        .animal-name { font-size: 2.5rem; font-weight: 800; color: #2563eb; cursor: pointer; }
+        
+        .drop-zone {
+            background: #eff6ff; border: 2px dashed #3b82f6; border-radius: 20px;
+            padding: 40px; text-align: center; cursor: pointer; transition: 0.2s;
+        }
+        .drop-zone:hover { background: #dbeafe; }
+        
+        .file-row { background: white; padding: 12px; border-radius: 12px; margin-top: 10px; border: 1px solid #e5e7eb; }
+        .progress { height: 8px; border-radius: 10px; margin-top: 8px; }
+    </style>
+</head>
+<body>
+
+<div id="stage"></div>
+
+<div class="container app-container">
+    <div id="setup" class="id-card text-center">
+        <p class="text-muted small mb-1">YOUR CODE</p>
+        <div class="animal-name mb-2" id="my-id" onclick="copyId()">...</div>
+        <p class="text-muted extra-small mb-4" style="font-size: 11px;">Click to copy</p>
+        
+        <input type="text" id="remote-id" class="form-control text-center mb-2" placeholder="Friend's animal name">
+        <button class="btn btn-primary w-100 fw-bold py-2" onclick="connectToPeer()">Connect & Share</button>
+        <div id="status" class="mt-3 small text-muted">Initializing...</div>
+    </div>
+
+    <div id="main-ui" style="display:none">
+        <div class="drop-zone" onclick="document.getElementById('file-input').click()">
+            <div class="display-6">📄</div>
+            <p class="fw-bold m-0 mt-2">Tap to select files (Up to 10GB)</p>
+            <input type="file" id="file-input" multiple hidden>
+        </div>
+        <div id="list" class="mt-3"></div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<script>
+    const animals = ['CAT', 'DOG', 'BEAR', 'WOLF', 'LION', 'FOX', 'DEER', 'HAWK', 'FISH', 'OWL'];
+    const myAnimal = animals[Math.floor(Math.random() * animals.length)] + Math.floor(Math.random() * 9);
+    document.getElementById('my-id').innerText = myAnimal;
+
+    const peer = new Peer(myAnimal, { config: {'iceServers': [{url: 'stun:stun.l.google.com:19302'}]} });
+    let conn;
+    let flightInterval;
+
+    peer.on('open', () => document.getElementById('status').innerText = 'Ready');
+    peer.on('connection', c => { conn = c; handlePeer(); });
+    
+    function connectToPeer() {
+        const rId = document.getElementById('remote-id').value.toUpperCase();
+        conn = peer.connect(rId, { reliable: true });
+        handlePeer();
+    }
+
+    function handlePeer() {
+        conn.on('open', () => {
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('main-ui').style.display = 'block';
+        });
+
+        conn.on('data', async (data) => {
+            if (data.type === 'meta') {
+                startFlight();
+                initFileUI(data.id, data.name);
+                // We use a Blob strategy for simpler UI, 
+                // but 10GB relies on Browser's ability to handle Blobs via disk-swapping.
+                window.receivedData = window.receivedData || {};
+                window.receivedData[data.id] = { chunks: [], size: data.size, received: 0, name: data.name };
+            } else if (data.type === 'chunk') {
+                const item = window.receivedData[data.id];
+                item.chunks.push(data.data);
+                item.received += data.data.byteLength;
+                updateProgress(data.id, item.received, item.size);
+                
+                if (item.received >= item.size) {
+                    const blob = new Blob(item.chunks);
+                    const url = URL.createObjectURL(blob);
+                    const btn = document.getElementById('dl-' + data.id);
+                    btn.style.display = 'block';
+                    btn.onclick = () => {
+                        const a = document.createElement('a');
+                        a.href = url; a.download = item.name; a.click();
+                    };
+                    stopFlight();
+                }
+            }
+        });
+    }
+
+    // --- High Speed Sending (10GB Compatible) ---
+    document.getElementById('file-input').onchange = e => {
+        Array.from(e.target.files).forEach(file => {
+            const id = 'f' + Math.random().toString(36).substr(2,5);
+            initFileUI(id, file.name);
+            startFlight();
+            conn.send({ type: 'meta', id, name: file.name, size: file.size });
+
+            let offset = 0;
+            const CHUNK = 1024 * 256; // 256KB Chunks
+            const reader = new FileReader();
+            
+            reader.onload = () => {
+                conn.send({ type: 'chunk', id, data: reader.result });
+                offset += reader.result.byteLength;
+                updateProgress(id, offset, file.size);
+                if (offset < file.size) readNext();
+                else stopFlight();
+            };
+            const readNext = () => reader.readAsArrayBuffer(file.slice(offset, offset + CHUNK));
+            readNext();
+        });
+    };
+
+    // --- UI & Animations ---
+    function copyId() {
+        navigator.clipboard.writeText(myAnimal);
+        document.getElementById('status').innerText = 'Copied to clipboard!';
+    }
+
+    function startFlight() { if (!flightInterval) flightInterval = setInterval(createPaper, 300); }
+    function stopFlight() { clearInterval(flightInterval); flightInterval = null; }
+
+    function createPaper() {
+        const p = document.createElement('div');
+        p.className = 'flying-paper';
+        document.getElementById('stage').appendChild(p);
+        const startY = Math.random() * window.innerHeight;
+        const duration = 2000;
+        const start = performance.now();
+
+        function anim(t) {
+            const progress = (t - start) / duration;
+            p.style.left = (progress * window.innerWidth) + 'px';
+            p.style.top = (startY - Math.sin(progress * Math.PI) * 100) + 'px';
+            p.style.transform = `rotate(${progress * 360}deg)`;
+            if (progress < 1) requestAnimationFrame(anim); else p.remove();
+        }
+        requestAnimationFrame(anim);
+    }
+
+    function initFileUI(id, name) {
+        document.getElementById('list').insertAdjacentHTML('afterbegin', `
+            <div class="file-row" id="${id}">
+                <div class="d-flex justify-content-between small fw-bold">
+                    <span class="text-truncate" style="max-width:200px">${name}</span>
+                    <span id="perc-${id}">0%</span>
+                </div>
+                <div class="progress"><div class="progress-bar" id="bar-${id}" style="width:0%"></div></div>
+                <button class="btn btn-sm btn-success w-100 mt-2" id="dl-${id}" style="display:none">Download</button>
+            </div>
+        `);
+    }
+
+    function updateProgress(id, cur, tot) {
+        const p = Math.floor((cur/tot)*100);
+        document.getElementById('bar-' + id).style.width = p + '%';
+        document.getElementById('perc-' + id).innerText = p + '%';
+    }
+</script>
+</body>
+</html>
