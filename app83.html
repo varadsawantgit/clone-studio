@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Varad Sawant | Senior Production Support Engineer</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --g-blue: #1a73e8;
+            --g-red: #ea4335;
+            --g-yellow: #fbbc04;
+            --g-green: #34a853;
+            --g-border: #dadce0;
+            --g-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--g-bg);
+            color: #3c4043;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Fixed Google Branding Bar */
+        .g-header-bar {
+            height: 4px;
+            width: 100%;
+            display: flex;
+            position: fixed;
+            top: 0;
+            z-index: 2000;
+        }
+        .g-bar-seg { flex: 1; }
+
+        /* A4 Page Container */
+        .page-canvas {
+            background-color: white;
+            width: 210mm;
+            min-height: 297mm;
+            margin: 40px auto;
+            padding: 25mm 20mm;
+            box-shadow: 0 1px 3px rgba(60,64,67,0.15), 0 4px 8px 3px rgba(60,64,67,0.1);
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .section-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--g-blue);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .section-label::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background-color: #e8eaed;
+        }
+
+        .editable:focus {
+            outline: none;
+            background-color: #f1f3f4;
+            box-shadow: 0 0 0 2px var(--g-blue);
+            border-radius: 2px;
+        }
+
+        /* Centered Floating Toolbar */
+        .g-toolbar {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border: 1px solid var(--g-border);
+            border-radius: 28px;
+            padding: 8px 16px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            box-shadow: 0 1px 3px 0 rgba(60,64,67,.30), 0 4px 8px 3px rgba(60,64,67,.15);
+            z-index: 1000;
+        }
+
+        .g-btn {
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .g-btn-primary { background-color: var(--g-blue); color: white; }
+        .g-btn-primary:hover { background-color: #1765cc; }
+        .g-btn-outline { color: #3c4043; border: 1px solid var(--g-border); }
+        .g-btn-outline:hover { background-color: #f1f3f4; }
+
+        .skill-chip {
+            background: #f1f3f4;
+            color: #3c4043;
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 16px;
+            border: 1px solid #dadce0;
+        }
+
+        /* Print Optimization */
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { background: white !important; }
+            .no-print { display: none !important; }
+            .page-canvas {
+                margin: 0 !important;
+                padding: 15mm !important;
+                box-shadow: none !important;
+                width: 100% !important;
+                min-height: auto !important;
+            }
+            .section-label { color: black !important; border-bottom: 1px solid #333; }
+            .section-label::after { display: none; }
+            .skill-chip { border: 1px solid #000 !important; background: transparent !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div class="g-header-bar no-print">
+        <div class="g-bar-seg" style="background:var(--g-blue)"></div>
+        <div class="g-bar-seg" style="background:var(--g-red)"></div>
+        <div class="g-bar-seg" style="background:var(--g-yellow)"></div>
+        <div class="g-bar-seg" style="background:var(--g-green)"></div>
+    </div>
+
+    <div v-if="showLogin" class="fixed inset-0 flex items-center justify-center bg-white/90 backdrop-blur-sm z-[3000] no-print">
+        <div class="bg-white border border-gray-300 p-8 rounded-lg shadow-xl w-80 text-center">
+            <h2 class="text-xl font-medium mb-6">Verify your identity</h2>
+            <input type="password" v-model="passInput" @keyup.enter="handleLogin" placeholder="Enter password" class="w-full border-b border-gray-300 focus:border-blue-500 outline-none py-2 mb-8 text-center text-lg">
+            <div class="flex justify-center gap-4">
+                <button @click="showLogin = false" class="text-blue-600 font-medium hover:underline">Cancel</button>
+                <button @click="handleLogin" class="g-btn g-btn-primary">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-canvas" id="printable-area">
+        <header class="mb-6 flex justify-between items-start">
+            <div>
+                <h1 class="text-4xl font-bold text-[#202124] mb-2 editable" :contenteditable="editMode">Varad Sawant</h1>
+                <p class="text-[14px] text-[#5f6368] leading-relaxed max-w-2xl editable" :contenteditable="editMode">
+                    {{ resume.summary }}
+                </p>
+            </div>
+            <div class="text-right text-[12px] text-[#5f6368] leading-tight pt-1">
+                <p class="font-bold text-[#202124]">Mumbai, MH</p>
+                <p>varad.sawant@email.com</p>
+                <p>+91 98765 43210</p>
+                <p class="text-blue-600">linkedin/varadsawant</p>
+            </div>
+        </header>
+
+        <section class="mb-6">
+            <div class="section-label">Experience</div>
+            <div v-for="(job, idx) in resume.experience" :key="idx" class="mb-5 last:mb-0">
+                <div class="flex justify-between items-baseline mb-1">
+                    <h3 class="text-[16px] font-bold text-[#202124] editable" :contenteditable="editMode">{{ job.company }}</h3>
+                    <span class="text-[12px] text-[#5f6368] font-medium">{{ job.period }}</span>
+                </div>
+                <div class="text-[13px] text-blue-700 font-medium mb-2">{{ job.role }}</div>
+                <ul class="list-disc ml-5 space-y-1">
+                    <li v-for="(point, pIdx) in job.points" :key="pIdx" class="text-[13px] text-[#3c4043] editable" :contenteditable="editMode">
+                        {{ point }}
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="mb-6">
+            <div class="section-label">Education</div>
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="text-[14px] font-bold text-[#202124] editable" :contenteditable="editMode">{{ resume.education.degree }}</h3>
+                    <p class="text-[12px] text-[#5f6368] editable" :contenteditable="editMode">{{ resume.education.university }}</p>
+                </div>
+                <span class="text-[12px] text-[#5f6368]">Graduated 2018</span>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-label">Technical Skills</div>
+            <div class="grid grid-cols-2 gap-x-12 gap-y-4">
+                <div v-for="(skillGroup, sIdx) in resume.skills" :key="sIdx">
+                    <h4 class="text-[11px] font-bold text-[#70757a] uppercase mb-2">{{ skillGroup.category }}</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <span v-for="skill in skillGroup.items" class="skill-chip">{{ skill }}</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="g-toolbar no-print">
+        <button @click="requestEdit" :class="editMode ? 'g-btn-primary' : 'g-btn-outline'" class="g-btn">
+            <span>{{ editMode ? 'Save Profile' : 'Edit Resume' }}</span>
+        </button>
+        <div class="w-px h-6 bg-gray-200"></div>
+        <button @click="downloadPDF" class="g-btn g-btn-primary">
+            <span>Download PDF</span>
+        </button>
+        <button v-if="authenticated" @click="logout" class="text-[10px] text-gray-400 font-bold ml-2">LOCK</button>
+    </div>
+</div>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+    data() {
+        return {
+            authenticated: false,
+            showLogin: false,
+            editMode: false,
+            passInput: '',
+            hashedSecret: "57a90244359d0c59fe312bc6a43a28d78f6c65e4095699e5a98ea03f40792536",
+            resume: {
+                summary: "Senior Production Support Engineer with 6.5 years of experience in high-volume BFSI environments. Expert in Unix/Linux ecosystems, Python automation, and ITRS infrastructure. Proven track record of reducing system MTTR and managing complex Control-M batch architecture.",
+                experience: [
+                    { 
+                        company: "ICICI Bank", role: "Senior Production Support Engineer", period: "2024 — Present", 
+                        points: [
+                            "Architected a Python automation framework for SOD health checks across 50+ servers, reducing manual efforts by 40%.",
+                            "Developed advanced ITRS Geneos samplers for real-time transaction latency monitoring and API response tracking.",
+                            "Optimized production Oracle SQL queries, reducing trade settlement reporting time from 45 minutes to 12 minutes.",
+                            "Lead for P1/P2 incidents, utilizing Unix kernel debugging and log parsing to maintain 99.9% recovery SLAs."
+                        ] 
+                    },
+                    { 
+                        company: "TCS", role: "Production Support Engineer", period: "2018 — 2024", 
+                        points: [
+                            "Managed 1,200+ daily critical batch jobs using Control-M Workload Automation for a Global Investment Bank.",
+                            "Scripted Unix Shell utilities for automated filesystem cleanup and log rotation, reducing disk-space alerts by 60%.",
+                            "Resolved production database discrepancies through deep-dive SQL analysis and Root Cause Investigation (RCA).",
+                            "Configured proactive Cron-based monitoring for IBM MQ depth and system resource utilization."
+                        ] 
+                    }
+                ],
+                education: { 
+                    degree: "B.E. Mechanical Engineering", university: "Shivaji University, Kolhapur" 
+                },
+                skills: [
+                    { category: "Systems", items: ["Linux", "Unix Bash", "Python", "KSH"] },
+                    { category: "Observability", items: ["ITRS", "Splunk", "AppDynamics"] },
+                    { category: "Databases", items: ["Oracle 19c", "SQL Tuning", "PL/SQL"] },
+                    { category: "Tools", items: ["Control-M", "IBM MQ", "ServiceNow", "Jira"] }
+                ]
+            }
+        }
+    },
+    methods: {
+        downloadPDF() { window.print(); },
+        async hashPassword(string) {
+            const utf8 = new TextEncoder().encode(string);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        },
+        async handleLogin() {
+            const hash = await this.hashPassword(this.passInput.trim());
+            if (hash === this.hashedSecret) {
+                this.authenticated = true;
+                this.showLogin = false;
+                this.editMode = true;
+            } else {
+                alert("Identity verification failed.");
+            }
+            this.passInput = '';
+        },
+        requestEdit() {
+            if (this.editMode) { this.editMode = false; return; }
+            if (this.authenticated) { this.editMode = true; } else { this.showLogin = true; }
+        },
+        logout() { this.authenticated = false; this.editMode = false; }
+    }
+}).mount('#app')
+</script>
+</body>
+</html>
